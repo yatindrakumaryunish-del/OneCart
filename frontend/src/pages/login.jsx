@@ -5,6 +5,8 @@ import GoogleLogo from '../assets/google.png'
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5"
 import axios from 'axios'
 import { authDataContext } from '../context/AuthContext.jsx'
+import { signInWithPopup } from "firebase/auth"
+import { auth, provider } from "../../utils/Firebase"
 
 function Login() {
   let navigate = useNavigate()
@@ -15,7 +17,7 @@ function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  // 2. Login submit handler
+  // 2. Manual Login submit handler
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
@@ -28,11 +30,34 @@ function Login() {
         { withCredentials: true }
       )
 
-      console.log("Login successfully!", result.data);
-alert("Login successfully!"); // screen par pop-up ke liye
+      console.log("Login successfully!", result.data)
+      navigate('/')
     } catch (error) {
       console.log("Login Error:", error.response?.data?.message || error.message)
       alert(error.response?.data?.message || "Login failed")
+    }
+  }
+
+  // 3. Google Login handler (Backend se connected)
+  const googleLogin = async () => {
+    try {
+      const response = await signInWithPopup(auth, provider)
+      const user = response.user
+
+      const result = await axios.post(
+        `${serverUrl}/api/auth/google`,
+        {
+          name: user.displayName,
+          email: user.email,
+        },
+        { withCredentials: true }
+      )
+
+      console.log("Google Login Success:", result.data)
+      navigate('/')
+    } catch (error) {
+      console.log("Google Login Error:", error)
+      alert("Google Sign-In failed")
     }
   }
 
@@ -60,8 +85,11 @@ alert("Login successfully!"); // screen par pop-up ke liye
         {/* Square Card */}
         <div className='max-w-[480px] w-[90%] bg-[#00000025] border border-[#96969635] backdrop-blur-2xl rounded-2xl flex flex-col items-center p-6 gap-4 shadow-2xl'>
           
-          {/* Google Button */}
-          <div className='w-full h-[50px] bg-[#42656cae] hover:bg-[#42656c] transition-all rounded-lg flex items-center justify-center gap-[10px] cursor-pointer'>
+          {/* Google Button (onClick added) */}
+          <div 
+            onClick={googleLogin}
+            className='w-full h-[50px] bg-[#42656cae] hover:bg-[#42656c] transition-all rounded-lg flex items-center justify-center gap-[10px] cursor-pointer'
+          >
             <img src={GoogleLogo} alt="Google" className='w-[20px] h-[20px] object-contain' />
             <span className='text-[15px] font-medium'>Sign in with Google</span>
           </div>

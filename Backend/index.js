@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 dotenv.config();
 import cors from "cors";
+import userRoutes from "./routes/userRoutes.js";
 
 let port = process.env.PORT ||  6000;
 let app = express();
@@ -16,7 +17,9 @@ app.use(cors({
     credentials: true,
 }));
 
-app.use("/api/auth",authRoutes);
+app.use("/api/auth",authRoutes)
+app.use("/api/user",userRoutes)
+
 app.get("/", (req, res) => {
     res.send("Server is running successfully!");
 });

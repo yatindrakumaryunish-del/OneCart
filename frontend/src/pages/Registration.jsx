@@ -2,11 +2,11 @@ import React, { useState, useContext } from 'react'
 import Logo from '../assets/OncartLogo.png'
 import { useNavigate } from 'react-router-dom'
 import GoogleLogo from '../assets/google.png'
-import { IoEyeOutline, IoEyeOffOutline, IoCloudyNight } from "react-icons/io5"
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5"
 import axios from 'axios'
 import { authDataContext } from '../context/AuthContext.jsx'
 import { signInWithPopup } from 'firebase/auth'
-import { auth, provider } from '../../utils/Firebase';
+import { auth, provider } from '../../utils/Firebase'
 
 function Registration() {
   let navigate = useNavigate()
@@ -29,18 +29,35 @@ function Registration() {
         { withCredentials: true }
       )
       console.log(result.data)
+      navigate('/')
     } catch (error) {
-      console.log("Backend Error Response",error.response?.data);
+      console.log("Backend Error Response", error.response?.data)
+      alert(error.response?.data?.message || "Signup failed")
     }
   }
-const googleSignup = async () => {
+
+  const googleSignup = async () => {
     try {
-      const response = await signInWithPopup(auth, provider);
-      console.log(response);
+      const response = await signInWithPopup(auth, provider)
+      const user = response.user
+
+      const result = await axios.post(
+        `${serverUrl}/api/auth/google`,
+        {
+          name: user.displayName,
+          email: user.email,
+        },
+        { withCredentials: true }
+      )
+
+      console.log("Google Signup Backend Success:", result.data)
+      navigate('/')
     } catch (error) {
-      console.log("Google Signup Error:", error);
+      console.log("Google Signup Error:", error)
+      alert("Google Signup failed")
     }
-  };
+  }
+
   return (
     <div className='w-screen h-screen bg-gradient-to-b from-[#18181b] via-[#0f0f11] to-[#09090b] text-white flex flex-col'>
       
@@ -66,7 +83,10 @@ const googleSignup = async () => {
         <div className='max-w-[480px] w-[90%] bg-[#00000025] border border-[#96969635] backdrop-blur-2xl rounded-2xl flex flex-col items-center p-6 gap-4 shadow-2xl'>
           
           {/* Google Button */}
-          <div className='w-full h-[50px] bg-[#42656cae] hover:bg-[#42656c] transition-all rounded-lg flex items-center justify-center gap-[10px] cursor-pointer'onClick={googleSignup}>
+          <div 
+            className='w-full h-[50px] bg-[#42656cae] hover:bg-[#42656c] transition-all rounded-lg flex items-center justify-center gap-[10px] cursor-pointer' 
+            onClick={googleSignup}
+          >
             <img src={GoogleLogo} alt="Google" className='w-[20px] h-[20px] object-contain' />
             <span className='text-[15px] font-medium'>Registration with Google</span>
           </div>
